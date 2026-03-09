@@ -175,6 +175,40 @@
   #controls button:hover, #navbar > button:hover, #methodSelect:hover {
     background-color: #444;
   }
+  /* Hide advanced controls in ESL integration */
+  #methodContainer,
+  #hintsContainer,
+  #controlButton {
+    display: none;
+  }
+  #scanTimer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #a0a0a0;
+    margin-left: 16px;
+  }
+  #scanTimer .scan-timer-value {
+    min-width: 3ch;
+    text-align: right;
+  }
+  #controls-timed-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  #timedStartButton,
+  #timedStopButton,
+  #redoScanButton {
+    min-width: 110px;
+    text-align: center;
+  }
+  /* Default: show Start, hide Stop */
+  #timedStopButton {
+    display: none;
+  }
   #tabs-container {
     display: flex;
     background: #2c2c2e;
@@ -211,7 +245,7 @@
   .dim-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2; display: none; }
   .progressMessage { position: absolute; z-index: 3; display: none; top: calc(50% + 50px); left: 50%; transform: translateX(-50%); font-size: 14px; color: white; text-align: center; }
   #errorPopup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #b71c1c; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
-  #methodContainer, #hintsContainer, #fpsDisplay { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  #fpsDisplay { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   /* Tooltip Styles */
   .tooltip { position: relative; display: inline-block; cursor: pointer; }
   .tooltip .tooltip-label, .tooltip .tooltip-icon { vertical-align: middle; }
@@ -225,10 +259,9 @@
 
 <div id="errorPopup">Error message goes here</div>
 <div id="navbar">
-  <a href="https://www.rouast.com/api/" target="_blank" class="logo-link">
-    <div class="logo-container"><img src="__LOGO_URL__" alt="VitalLens API" /></div>
-    <div class="logo-text"><div class="powered-by">Powered by</div><div class="api-name">VitalLens API</div></div>
-  </a>
+  <div class="logo-text">
+    <div class="api-name">Wise AI – Vitals Widget</div>
+  </div>
   <div id="tabs-container">
     <button id="webcamModeButton" class="tab-button">Webcam</button>
     <button id="fileModeButton" class="tab-button">File</button>
@@ -247,6 +280,7 @@
   </div>
   <div id="controls">
     <div id="fpsDisplay"><span class="fps-label">FPS:</span><span class="fps-value">N/A</span></div>
+    <div id="scanTimer"><span class="scan-timer-label">Elapsed:</span><span class="scan-timer-value">0s</span></div>
     <div id="methodContainer">
       <label for="methodSelect">Method:</label>
       <select id="methodSelect">
@@ -279,6 +313,11 @@
       </div>
     </div>
     <button id="controlButton">Pause</button>
+    <div id="controls-timed-buttons">
+      <button id="timedStartButton">Start 60s</button>
+      <button id="timedStopButton">Stop</button>
+      <button id="redoScanButton">Redo scan</button>
+    </div>
   </div>
   <div id="vitals-container">
     <div id="vitalsDimmer" class="dim-overlay"></div>

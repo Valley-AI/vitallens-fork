@@ -120,6 +120,12 @@ export class VitalLensWidget extends VitalLensBase {
   protected debug: boolean = false;
   protected readonly ecoModeFps: number = 15;
   protected bufferingTimeout: number | null = null;
+  protected scanTimerElement!: HTMLElement;
+  protected scanTimerStart: number | null = null;
+  protected scanTimerInterval: number | null = null;
+  protected scanAccumulatedMs: number = 0;
+  protected scanTargetMs: number = 60_000;
+  protected scanRunning: boolean = false;
   private _handleResizeBound = this.handleResize.bind(this);
 
   private waveformPlayer: WaveformPlayer;
@@ -169,15 +175,16 @@ export class VitalLensWidget extends VitalLensBase {
     );
     this.bindEvents();
     window.addEventListener('resize', this._handleResizeBound);
-
-    this.startMode('webcam', true, false).catch((err) =>
-      console.error('Failed to start webcam mode:', err)
-    );
+    // Default to webcam tab selected, but do not auto-start the stream.
+    this.mode = 'webcam';
+    this.webcamModeButtonElement?.classList.add('active');
+    this.fileModeButtonElement?.classList.remove('active');
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('resize', this._handleResizeBound);
+    this.stopScanTimer();
     this.waveformPlayer.stop();
   }
 
@@ -210,12 +217,14 @@ export class VitalLensWidget extends VitalLensBase {
       '#vitalsProgressMessage'
     )!;
     this.errorPopupElement = this.shadowRoot!.querySelector('#errorPopup')!;
+    this.scanTimerElement = this.shadowRoot!.querySelector(
+      '#scanTimer .scan-timer-value'
+    ) as HTMLElement;
   }
 
   // Update initVitalLensInstance to trigger the metadata sync
   protected async initVitalLensInstance(): Promise<void> {
-    const selectedMethod =
-      (this.methodSelectElement.value as Method) || 'vitallens';
+    const selectedMethod: Method = 'vitallens';
     if (this.vitalLensInstance && this.currentMethod === selectedMethod) return;
 
     this.currentMethod = selectedMethod;
@@ -578,6 +587,9 @@ export class VitalLensWidget extends VitalLensBase {
         video: { facingMode: 'user' },
       });
       this.videoElement.srcObject = stream;
+      // Ensure the feed is actually visible in the widget.
+      this.videoElement.style.display = 'block';
+      this.canvasElement.style.display = 'block';
       await this.vitalLensInstance.setVideoStream(stream, this.videoElement);
       this.videoElement.onloadeddata = () => {
         this.setCanvasDimensions();
@@ -769,6 +781,112 @@ export class VitalLensWidget extends VitalLensBase {
     await this.startMode(newMode, true, false);
   }
 
+  private startScanTimer() {
+    if (!this.scanTimerElement) return;
+    if (this.scanTimerInterval !== null) {
+      window.clearInterval(this.scanTimerInterval);
+      this.scanTimerInterval = null;
+    }
+    this.scanTimerStart = Date.now();
+    this.scanTimerElement.textContent = '0s';
+    this.scanTimerInterval = window.setInterval(() => {
+      if (!this.scanRunning) return;
+      const now = Date.now();
+      if (this.scanTimerStart == null) {
+        this.scanTimerStart = now;
+        return;
+      }
+      const deltaMs = now - this.scanTimerStart;
+      this.scanTimerStart = now;
+
+      // Only accumulate time while we are in a good tracking state.
+      if (this.sessionState === 'tracking') {
+        this.scanAccumulatedMs += deltaMs;
+      }
+
+      const elapsedSec = Math.floor(this.scanAccumulatedMs / 1000);
+      this.scanTimerElement.textContent = `${elapsedSec}s`;
+
+      if (this.scanAccumulatedMs >= this.scanTargetMs) {
+        this.stopWebcamScan();
+        this.dispatchEvent(
+          new CustomEvent('scancomplete', {
+            detail: this.latestResult,
+          })
+        );
+      }
+    }, 500);
+  }
+
+  private stopScanTimer() {
+    if (this.scanTimerInterval !== null) {
+      window.clearInterval(this.scanTimerInterval);
+      this.scanTimerInterval = null;
+    }
+    this.scanTimerStart = null;
+    this.scanRunning = false;
+  }
+
+  private updateTimedControls(running: boolean) {
+    const timedStartButton = this.shadowRoot!.querySelector(
+      '#timedStartButton'
+    ) as HTMLButtonElement | null;
+    const timedStopButton = this.shadowRoot!.querySelector(
+      '#timedStopButton'
+    ) as HTMLButtonElement | null;
+    if (!timedStartButton || !timedStopButton) return;
+    if (running) {
+      timedStartButton.style.display = 'none';
+      timedStopButton.style.display = '';
+    } else {
+      timedStartButton.style.display = '';
+      timedStopButton.style.display = 'none';
+    }
+  }
+
+  /**
+   * Starts a webcam scan and automatically pauses the stream after the given duration.
+   * Intended for host apps (like ESL) that want a simple 60s timed scan API.
+   */
+  public async startTimedWebcamScan(durationSeconds: number = 60): Promise<void> {
+    // Always switch to webcam mode first (without auto-start).
+    if (this.mode !== 'webcam') {
+      await this.switchMode('webcam');
+    }
+    // Ensure VitalLens instance and webcam are initialized.
+    if (!this.vitalLensInstance) {
+      await this.initVitalLensInstance();
+    }
+    await this.setupWebcam();
+    // Start streaming if not already running.
+    if (this.vitalLensInstance && !this.isProcessingFlag) {
+      this.vitalLensInstance.startVideoStream();
+      this.isProcessingFlag = true;
+      this.controlButtonElement.textContent = 'Pause';
+      this.setBufferingTimeout();
+    }
+
+    this.scanAccumulatedMs = 0;
+    this.scanTargetMs = Math.max(0, durationSeconds) * 1000;
+    this.scanRunning = true;
+    this.startScanTimer();
+    this.updateTimedControls(true);
+  }
+
+  /**
+   * Stops the webcam scan if running and clears any pending auto-stop timer.
+   */
+  public stopWebcamScan(): void {
+    if (this.mode === 'webcam' && this.vitalLensInstance && this.isProcessingFlag) {
+      this.vitalLensInstance.pauseVideoStream();
+      this.controlButtonElement.textContent = 'Resume';
+      this.isProcessingFlag = false;
+      this.clearBufferingTimeout();
+    }
+    this.stopScanTimer();
+    this.updateTimedControls(false);
+  }
+
   private handleVideoProgressEvent(message: string): void {
     console.log(message);
     this.showVideoLoader(message);
@@ -918,6 +1036,32 @@ export class VitalLensWidget extends VitalLensBase {
       }
     });
 
+    const timedStartButton = this.shadowRoot!.querySelector(
+      '#timedStartButton'
+    ) as HTMLButtonElement | null;
+    if (timedStartButton) {
+      timedStartButton.addEventListener('click', () => {
+        this.startTimedWebcamScan(60);
+      });
+    }
+    const timedStopButton = this.shadowRoot!.querySelector(
+      '#timedStopButton'
+    ) as HTMLButtonElement | null;
+    if (timedStopButton) {
+      timedStopButton.addEventListener('click', () => {
+        this.stopWebcamScan();
+      });
+    }
+    const redoScanButton = this.shadowRoot!.querySelector(
+      '#redoScanButton'
+    ) as HTMLButtonElement | null;
+    if (redoScanButton) {
+      redoScanButton.addEventListener('click', () => {
+        this.stopWebcamScan();
+        this.startTimedWebcamScan(60);
+      });
+    }
+
     this.webcamModeButtonElement?.addEventListener('click', () =>
       this.switchMode('webcam')
     );
@@ -1016,6 +1160,7 @@ export class VitalLensWidget extends VitalLensBase {
 
   public destroy(): void {
     window.removeEventListener('resize', this._handleResizeBound);
+    this.stopScanTimer();
     this.resetVideoStreamView();
     this.resetVideoFileView();
     super.destroy();
