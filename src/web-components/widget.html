@@ -15,15 +15,17 @@
     --resp-color: #00A3FC;      /* Main Blue for RR */
     --resp-color-dark: #0056b3; /* Darker Blue for RR unit */
   }
-  /* Navbar area */
+  /* Navbar area – senior-friendly: larger text and touch targets */
   #navbar {
     flex: 0 0 auto;
-    padding: 10px 15px;
+    padding: 14px 16px;
     background: #1c1c1e;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #333;
+    gap: 12px;
+    flex-wrap: wrap;
   }
   .logo-link {
     display: flex;
@@ -42,8 +44,9 @@
     color: #a0a0a0;
   }
   .logo-text .api-name {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 600;
+    line-height: 1.3;
   }
   /* Main content area */
   #main-content {
@@ -62,16 +65,23 @@
   #vitals-container {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    gap: 24px;
+    padding: 14px 12px;
     box-sizing: border-box;
     min-height: 0;
   }
   .chart-wrapper {
     display: flex;
     flex: 1 1 0;
-    gap: 10px;
+    gap: 14px;
     min-height: 0;
+    align-items: stretch;
+  }
+  .chart-wrapper:first-child {
+    padding-bottom: 4px;
+  }
+  .chart-wrapper:last-child {
+    padding-top: 8px;
   }
   .chart-container {
     flex-grow: 1;
@@ -85,23 +95,29 @@
   }
   .vital-stats {
     flex-shrink: 0;
-    width: 120px;
+    width: 130px;
     text-align: left;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 0;
+    padding: 4px 0;
   }
   .vital-stats p {
-    margin: 4px 0 0;
+    margin: 0;
     white-space: nowrap;
+    line-height: 1.35;
+  }
+  .vital-stats .label {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
   }
   .vital-stats .value {
     font-size: 42px;
     font-weight: 600;
-  }
-  .vital-stats .label {
-    font-size: 14px;
-    font-weight: 600;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
   }
   .vital-stats .unit {
     font-size: 14px;
@@ -125,55 +141,70 @@
     color: var(--resp-color-dark);
   }
   #hrv-stats-container {
-    margin-top: 8px; 
-    padding-top: 8px;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    padding-top: 12px;
+    padding-bottom: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   .hrv-stat {
-      display: flex;
-      justify-content: flex-start;
-      align-items: baseline;
-      font-size: 14px;
-      color: #E62100; 
-      gap: 6px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    font-size: 14px;
+    color: #E62100;
+    gap: 8px;
+    line-height: 1.4;
   }
   .hrv-stat:not(:last-child) {
-      margin-bottom: 4px; 
+    margin-bottom: 0;
   }
   .hrv-label {
-      font-weight: 300;
-      opacity: 0.8;
+    font-weight: 300;
+    opacity: 0.9;
+    min-width: 2.8em;
   }
   .hrv-value {
-      font-weight: 600;
+    font-weight: 600;
   }
   .hrv-unit {
-      font-weight: 300;
-      opacity: 0.7;
-      padding-left: 4px;
+    font-weight: 300;
+    opacity: 0.7;
+    padding-left: 2px;
   }
   .hrv-metric .value { font-weight: 600; }
   .hrv-metric .unit { color: #a0a0a0; }
-  /* Controls area */
+  /* Controls area – senior-friendly: large touch targets, clear spacing */
   #controls {
     flex: 0 0 auto;
     background: #111;
-    padding: 10px; /* RESTORED this padding */
+    padding: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
   }
   #controls button, #navbar > button, #methodSelect {
     background-color: #333;
     border: 1px solid #555;
     color: #fff;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 14px;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 16px;
+    min-height: 44px;
     cursor: pointer;
     transition: background-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
   #controls button:hover, #navbar > button:hover, #methodSelect:hover {
     background-color: #444;
+  }
+  #controls button:active, #navbar > button:active {
+    background-color: #555;
   }
   /* Hide advanced controls in ESL integration */
   #methodContainer,
@@ -184,26 +215,60 @@
   #scanTimer {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 14px;
-    color: #a0a0a0;
-    margin-left: 16px;
+    gap: 6px;
+    font-size: 16px;
+    color: #e0e0e0;
+    margin-left: 0;
   }
   #scanTimer .scan-timer-value {
     min-width: 3ch;
     text-align: right;
+    font-weight: 600;
   }
   #controls-timed-buttons {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     margin-left: auto;
+    flex-wrap: wrap;
   }
   #timedStartButton,
   #timedStopButton,
   #redoScanButton {
-    min-width: 110px;
+    min-width: 120px;
+    min-height: 48px;
+    padding: 14px 20px;
+    font-size: 17px;
+    font-weight: 600;
     text-align: center;
+    border-radius: 10px;
+  }
+  #timedStartButton {
+    background-color: #00A3FC;
+    border-color: #00A3FC;
+    color: #fff;
+  }
+  #timedStartButton:hover {
+    background-color: #0090e0;
+    border-color: #0090e0;
+  }
+  #timedStopButton {
+    background-color: #c62828;
+    border-color: #c62828;
+    color: #fff;
+  }
+  #timedStopButton:hover {
+    background-color: #b71c1c;
+    border-color: #b71c1c;
+  }
+  #redoScanButton {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+  }
+  #redoScanButton:hover {
+    background-color: #1b5e20;
+    border-color: #1b5e20;
   }
   /* Default: show Start, hide Stop */
   #timedStopButton {
@@ -212,20 +277,23 @@
   #tabs-container {
     display: flex;
     background: #2c2c2e;
-    border-radius: 8px;
-    padding: 3px;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
   }
   .tab-button {
     background: transparent;
     border: none;
     color: #98989d;
-    border-radius: 6px;
-    padding: 6px 16px;
+    border-radius: 8px;
+    padding: 10px 18px;
     margin: 0;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
+    min-height: 44px;
     cursor: pointer;
     transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
   }
   .tab-button.active {
     background: #464649;
@@ -235,8 +303,70 @@
   .tab-button:hover:not(.active) {
     color: #ffffff;
   }
-  /* Other styles */
-  #video-container video, #video-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+  #downloadButton {
+    min-height: 44px;
+    padding: 10px 18px;
+    font-size: 15px;
+  }
+  /* Mobile: single-row navbar, title left, tabs + download grouped right, no extra space */
+  @media (max-width: 480px) {
+    #navbar {
+      padding: 12px 14px;
+      flex-wrap: nowrap;
+      gap: 10px;
+    }
+    #navbar #tabs-container {
+      flex: 0 0 auto;
+      flex-shrink: 0;
+    }
+    #navbar #downloadButton {
+      flex: 0 0 auto;
+      flex-shrink: 0;
+      padding: 10px 12px;
+      font-size: 14px;
+      margin-left: auto;
+    }
+    #navbar #tabs-container .tab-button {
+      padding: 8px 12px;
+      font-size: 14px;
+      min-height: 40px;
+    }
+    #controls {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 14px 16px;
+      gap: 14px;
+    }
+    #controls .controls-status-row {
+      justify-content: space-between;
+      width: 100%;
+      font-size: 17px;
+      color: #e0e0e0;
+    }
+    #fpsDisplay {
+      font-size: 17px;
+    }
+    #scanTimer {
+      font-size: 17px;
+    }
+    #controls-timed-buttons {
+      margin-left: 0;
+      flex-direction: row;
+      justify-content: stretch;
+      gap: 14px;
+    }
+    #timedStartButton,
+    #timedStopButton,
+    #redoScanButton {
+      flex: 1;
+      min-width: 0;
+      min-height: 52px;
+      font-size: 18px;
+      padding: 16px 12px;
+    }
+  }
+  /* Other styles: mirror video/canvas so "move right" appears as "right" on screen */
+  #video-container video, #video-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
   #video-container canvas { pointer-events: none; }
   #dropZone { position: absolute; top: 8px; left: 8px; width: calc(100% - 16px); height: calc(100% - 16px); border: 2px dashed #00A3FC; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 14px; color: #00A3FC; background: rgba(0, 0, 0, 0.8); cursor: pointer; box-sizing: border-box; padding: 20px; z-index: 3; display: none; }
   #dropZone.hover { background: rgba(0, 123, 255, 0.2); }
@@ -245,7 +375,12 @@
   .dim-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2; display: none; }
   .progressMessage { position: absolute; z-index: 3; display: none; top: calc(50% + 50px); left: 50%; transform: translateX(-50%); font-size: 14px; color: white; text-align: center; }
   #errorPopup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #b71c1c; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
-  #fpsDisplay { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .controls-status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  #fpsDisplay { display: flex; align-items: center; gap: 8px; font-size: 16px; }
   /* Tooltip Styles */
   .tooltip { position: relative; display: inline-block; cursor: pointer; }
   .tooltip .tooltip-label, .tooltip .tooltip-icon { vertical-align: middle; }
@@ -255,13 +390,36 @@
   .tooltip .tooltip-content ul { margin: 0; padding: 0 0 0 20px; list-style: disc; }
   .tooltip .tooltip-content li { margin-bottom: 5px; }
   .tooltip .tooltip-content li:last-child { margin-bottom: 0; }
+  /* Mobile: larger vital labels/values and spacing for readability */
+  @media (max-width: 480px) {
+    #vitals-container {
+      gap: 32px;
+      padding: 16px 12px;
+    }
+    .chart-wrapper {
+      gap: 16px;
+    }
+    .vital-stats {
+      width: 140px;
+    }
+    .vital-stats .label { font-size: 16px; margin-bottom: 8px; }
+    .vital-stats .value { font-size: 36px; margin-bottom: 6px; }
+    .vital-stats .unit { font-size: 15px; }
+    .chart-wrapper:first-child { padding-bottom: 8px; }
+    .chart-wrapper:last-child { padding-top: 12px; }
+    #hrv-stats-container {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      padding-top: 14px;
+      padding-bottom: 12px;
+      gap: 14px;
+    }
+    .hrv-stat { font-size: 15px; gap: 10px; }
+  }
 </style>
 
 <div id="errorPopup">Error message goes here</div>
 <div id="navbar">
-  <div class="logo-text">
-    <div class="api-name">Wise AI – Vitals Widget</div>
-  </div>
   <div id="tabs-container">
     <button id="webcamModeButton" class="tab-button">Webcam</button>
     <button id="fileModeButton" class="tab-button">File</button>
@@ -279,8 +437,10 @@
     <input type="file" id="videoInput" accept="video/*" style="display: none;" />
   </div>
   <div id="controls">
-    <div id="fpsDisplay"><span class="fps-label">FPS:</span><span class="fps-value">N/A</span></div>
-    <div id="scanTimer"><span class="scan-timer-label">Elapsed:</span><span class="scan-timer-value">0s</span></div>
+    <div class="controls-status-row">
+      <div id="fpsDisplay"><span class="fps-label">FPS:</span><span class="fps-value">N/A</span></div>
+      <div id="scanTimer"><span class="scan-timer-label">Elapsed:</span><span class="scan-timer-value">0s</span></div>
+    </div>
     <div id="methodContainer">
       <label for="methodSelect">Method:</label>
       <select id="methodSelect">
