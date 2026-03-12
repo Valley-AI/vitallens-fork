@@ -63,12 +63,8 @@
     background: #000000;
   }
   #vitals-container {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    padding: 14px 12px;
-    box-sizing: border-box;
-    min-height: 0;
+    /* Real-time results panel disabled: keep it out of layout */
+    display: none;
   }
   .chart-wrapper {
     display: flex;
@@ -373,7 +369,31 @@
   .spinner { position: absolute; z-index: 3; display: none; top: 50%; left: 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
   .dim-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2; display: none; }
-  .progressMessage { position: absolute; z-index: 3; display: none; top: calc(50% + 50px); left: 50%; transform: translateX(-50%); font-size: 14px; color: white; text-align: center; }
+  /* Progress/alerts: show as a polished toast near top-center */
+  .progressMessage {
+    position: absolute;
+    z-index: 3;
+    display: none;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.92);
+    text-align: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.45),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    max-width: min(560px, calc(100% - 24px));
+    line-height: 1.35;
+    letter-spacing: 0.2px;
+    pointer-events: none;
+  }
   #errorPopup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #b71c1c; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
   .controls-status-row {
     display: flex;
@@ -420,11 +440,32 @@
 
 <div id="errorPopup">Error message goes here</div>
 <div id="navbar">
-  <div id="tabs-container">
+  <!-- Original controls kept for JS wiring but visually hidden -->
+  <div id="tabs-container" style="display: none;">
     <button id="webcamModeButton" class="tab-button">Webcam</button>
     <button id="fileModeButton" class="tab-button">File</button>
   </div>
-  <button id="downloadButton">Download JSON</button>
+  <button id="downloadButton" style="display: none;">Download JSON</button>
+
+  <!-- Stylized tagline for the scan widget -->
+  <div
+    id="experienceTagline"
+    style="
+      margin-left: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.78);
+      text-shadow:
+        0 0 18px rgba(255,255,255,0.18),
+        0 0 40px rgba(0,0,0,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      padding-bottom: 4px;
+    "
+  >
+    Experience Senior Living
+  </div>
 </div>
 <div id="main-content">
   <div id="video-container">
@@ -434,6 +475,10 @@
     <div id="videoDimmer" class="dim-overlay"></div>
     <div id="videoSpinner" class="spinner"></div>
     <div id="videoProgressMessage" class="progressMessage"></div>
+    <!-- Keep vitals guidance/loading overlays in the video area (no logic changes) -->
+    <div id="vitalsDimmer" class="dim-overlay"></div>
+    <div id="vitalsSpinner" class="spinner"></div>
+    <div id="vitalsProgressMessage" class="progressMessage"></div>
     <input type="file" id="videoInput" accept="video/*" style="display: none;" />
   </div>
   <div id="controls">
@@ -479,11 +524,12 @@
       <button id="redoScanButton">Redo scan</button>
     </div>
   </div>
+  <!-- Real-time results panel removed from layout (kept via overlays above).
+       NOTE: We still keep the chart/value elements in DOM (hidden) so the
+       existing widget code can initialize safely without null canvas errors. -->
   <div id="vitals-container">
-    <div id="vitalsDimmer" class="dim-overlay"></div>
-    <div id="vitalsSpinner" class="spinner"></div>
-    <div id="vitalsProgressMessage" class="progressMessage"></div>
-    <div class="chart-wrapper">
+    <!-- Real-time results UI disabled for scan widget build -->
+    <div class="chart-wrapper" style="display: none;">
       <div class="chart-container"><canvas id="ppgChart"></canvas></div>
       <div class="vital-stats" id="ppgStats">
         <p class="label">HR <span class="unit">bpm</span></p>
@@ -503,7 +549,7 @@
         </div>
       </div>
     </div>
-    <div class="chart-wrapper">
+    <div class="chart-wrapper" style="display: none;">
       <div class="chart-container"><canvas id="respChart"></canvas></div>
       <div class="vital-stats" id="respStats">
         <p class="label">RR <span class="unit">bpm</span></p>

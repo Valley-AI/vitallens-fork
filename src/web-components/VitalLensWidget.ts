@@ -151,9 +151,11 @@ export class VitalLensWidget extends VitalLensBase {
         this.displayRespData = respHistory;
         this.displayRespConf = respConfHistory;
 
-        const isReady = this.sessionState === 'tracking';
-        this.updateChart(this.charts.ppgChart, isReady ? ppgHistory : []);
-        this.updateChart(this.charts.respChart, isReady ? respHistory : []);
+        // Real-time results disabled for scan widget build:
+        // Commenting out live waveform chart updates while scanning.
+        // const isReady = this.sessionState === 'tracking';
+        // this.updateChart(this.charts.ppgChart, isReady ? ppgHistory : []);
+        // this.updateChart(this.charts.respChart, isReady ? respHistory : []);
       },
       0.15,
       this.WINDOW_SIZE,
@@ -387,7 +389,9 @@ export class VitalLensWidget extends VitalLensBase {
         }
       }
 
-      this.waveformPlayer.addData(result);
+      // Real-time results disabled for scan widget build:
+      // Commenting out live waveform buffer/player updates while scanning.
+      // this.waveformPlayer.addData(result);
     } else {
       // File mode ignores real-time states and renders the entire payload
       this.hideVitalsLoader();
@@ -407,39 +411,40 @@ export class VitalLensWidget extends VitalLensBase {
     const { heart_rate, respiratory_rate, hrv_sdnn, hrv_rmssd } = vitals;
     const getConf = (v: { confidence?: number | number[] } | undefined) =>
       Array.isArray(v?.confidence)
-        ? v.confidence[v.confidence.length - 1]
+        ? v!.confidence![v!.confidence!.length - 1]
         : (v?.confidence ?? 0);
 
-    // Numeric values naturally handle their own threshold masking (-- if low confidence)
-    this.updateNumericValue(
-      'hr-value',
-      heart_rate?.value,
-      getConf(heart_rate),
-      this.VITAL_CONF_THRESHOLD,
-      0
-    );
-    this.updateNumericValue(
-      'rr-value',
-      respiratory_rate?.value,
-      getConf(respiratory_rate),
-      this.VITAL_CONF_THRESHOLD,
-      0
-    );
-    this.updateNumericValue(
-      'hrv-sdnn',
-      hrv_sdnn?.value,
-      getConf(hrv_sdnn),
-      this.HRV_CONF_THRESHOLD,
-      1
-    );
-    this.updateNumericValue(
-      'hrv-rmssd',
-      hrv_rmssd?.value,
-      getConf(hrv_rmssd),
-      this.HRV_CONF_THRESHOLD,
-      1
-    );
-
+    // Real-time results disabled for scan widget build:
+    // Commenting out live numeric vitals updates during scanning.
+    // Keep FPS updating (useful for debugging camera/stream performance).
+    // this.updateNumericValue(
+    //   'hr-value',
+    //   heart_rate?.value,
+    //   getConf(heart_rate),
+    //   this.VITAL_CONF_THRESHOLD,
+    //   0
+    // );
+    // this.updateNumericValue(
+    //   'rr-value',
+    //   respiratory_rate?.value,
+    //   getConf(respiratory_rate),
+    //   this.VITAL_CONF_THRESHOLD,
+    //   0
+    // );
+    // this.updateNumericValue(
+    //   'hrv-sdnn',
+    //   hrv_sdnn?.value,
+    //   getConf(hrv_sdnn),
+    //   this.HRV_CONF_THRESHOLD,
+    //   1
+    // );
+    // this.updateNumericValue(
+    //   'hrv-rmssd',
+    //   hrv_rmssd?.value,
+    //   getConf(hrv_rmssd),
+    //   this.HRV_CONF_THRESHOLD,
+    //   1
+    // );
     this.updateFpsValue(fps);
 
     if (this.mode === 'webcam') this.setBufferingTimeout();
@@ -877,9 +882,11 @@ export class VitalLensWidget extends VitalLensBase {
    * Stops the webcam scan if running and clears any pending auto-stop timer.
    */
   public stopWebcamScan(): void {
-    if (this.mode === 'webcam' && this.vitalLensInstance && this.isProcessingFlag) {
-      this.vitalLensInstance.pauseVideoStream();
-      this.controlButtonElement.textContent = 'Resume';
+    if (this.mode === 'webcam' && this.vitalLensInstance) {
+      // Fully tear down the stream so a fresh scan can re-call setVideoStream safely.
+      this.vitalLensInstance.stopVideoStream();
+      this.resetVideoStreamView();
+      this.controlButtonElement.textContent = 'Pause';
       this.isProcessingFlag = false;
       this.clearBufferingTimeout();
     }
